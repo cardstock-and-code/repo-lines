@@ -1,8 +1,17 @@
 {
   "name": "repo-lines",
   "version": "1.0.0",
-  "private": true,
   "description": "A picture of where your code stands: git branches as transit lines, with plain-English advice about what to do next.",
+  "license": "MIT",
+  "author": "Cardstock & Code",
+  "homepage": "https://github.com/cardstock-and-code/repo-lines#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cardstock-and-code/repo-lines.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cardstock-and-code/repo-lines/issues"
+  },
   "bin": {
     "repo-lines": "bin/repo-lines.js"
   },
@@ -15,14 +24,18 @@
     "bin",
     "lib",
     "hooks",
-    "docs",
-    "README.md"
+    "docs/SKILL.md",
+    "docs/ROADMAP.md",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "start": "node bin/repo-lines.js serve",
     "render": "node bin/repo-lines.js",
     "test": "node test/run.js",
-    "test:paths": "node test/paths.js",
+    "test:paths": "node test/run.js paths",
+    "test:multiroot": "node test/run.js multiroot",
+    "test:history": "node test/run.js history",
     "test:e2e": "node test/run.js e2e",
     "test:serve": "node test/run.js serve",
     "test:hooks": "node test/run.js hooks",
@@ -33,6 +46,8 @@
     "branches",
     "visualisation",
     "worktrees",
+    "git-graph",
+    "beginner",
     "claude-code",
     "codex"
   ],

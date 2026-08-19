@@ -1,6 +1,9 @@
 # Kickoff prompt
 
-Paste this into a fresh Claude Code session opened in this folder.
+**Historical, kept for the record.** This was the brief that moved the tool out
+of a chat session and into this repository on 2026-08-19. Parts of it are no
+longer true — notably the broken test fixture it describes, which was rebuilt
+that same day. For the current state read `CLAUDE.md` and `docs/ROADMAP.md`.
 
 ---
 
