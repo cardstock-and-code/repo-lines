@@ -1,0 +1,21 @@
+# generated output
+out/
+*.local.html
+
+# dependencies (there are none today, but keep the guard)
+node_modules/
+
+# test scratch
+test/fixtures/
+shots/
+__pycache__/
+*.pyc
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# local preferences, never committed
+.repo-lines/

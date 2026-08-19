@@ -1,0 +1,41 @@
+{
+  "name": "repo-lines",
+  "version": "0.3.0",
+  "private": true,
+  "description": "A picture of where your code stands: git branches as transit lines, with plain-English advice about what to do next.",
+  "bin": {
+    "repo-lines": "bin/repo-lines.js"
+  },
+  "main": "lib/scan.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "hooks",
+    "docs",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node bin/repo-lines.js serve",
+    "render": "node bin/repo-lines.js",
+    "test": "node test/run.js",
+    "test:paths": "node test/paths.js",
+    "test:e2e": "node test/run.js e2e",
+    "test:serve": "node test/run.js serve",
+    "test:hooks": "node test/run.js hooks",
+    "fixture": "node test/run.js fixture"
+  },
+  "keywords": [
+    "git",
+    "branches",
+    "visualisation",
+    "worktrees",
+    "claude-code",
+    "codex"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}

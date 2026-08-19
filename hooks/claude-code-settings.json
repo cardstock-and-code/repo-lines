@@ -1,0 +1,59 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "session", "start",
+              "--agent", "Claude Code",
+              "--pid", "none",
+              "--quiet"
+            ],
+            "async": true,
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "session", "beat",
+              "--agent", "Claude Code",
+              "--pid", "none",
+              "--quiet"
+            ],
+            "async": true,
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "session", "end",
+              "--quiet"
+            ],
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}
