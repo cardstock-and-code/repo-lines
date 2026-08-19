@@ -224,6 +224,25 @@ Everything works without this. Sessions only add names to the sidebar.
 cannot prove which was cut from which. The scanner guesses and says so. This
 setting makes it certain.
 
+## More than one folder
+
+`--root` can be repeated:
+
+```bash
+node ~/.repo-lines/app/bin/repo-lines.js serve --root ~/dev --root ~/clients
+```
+
+Or set them once in `~/.repo-lines/config.json`:
+
+```json
+{ "roots": ["~/dev", "~/clients"] }
+```
+
+If the same project name appears in two roots, both are kept and each is
+labelled with the folder it came from — "Notes (dev)" and "Notes (clients)".
+A folder that does not exist is reported and skipped rather than stopping the
+scan.
+
 ## Global preferences
 
 `~/.repo-lines/config.json` can also hold a `pretty` map that fixes up

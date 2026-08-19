@@ -13,11 +13,6 @@ came out of that session.
 
 ## Next
 
-### 3. Multiple roots
-
-Repeatable `--root` flag plus a `roots` array in config.json. Duplicate project
-names disambiguate with their parent folder.
-
 ### 4. Snapshot history
 
 `serve` writes a trimmed model to `~/.repo-lines/history/` at most once per
@@ -58,6 +53,12 @@ hook on each beat; an explicit `--note` always wins.
 
 ## Done
 
+- **Multiple roots** (2026-08-19). `--root` repeats, `REPO_LINES_ROOT` accepts
+  a delimited list, and config.json takes a `roots` array. A name appearing in
+  two roots keeps both, disambiguated by parent folder in both key and label;
+  keys stay slash-free so URLs still parse. Duplicate and missing roots are
+  handled without sinking the scan. Covered by a new node-only suite,
+  `test/multiroot.js` (14 checks), so the browser suites stayed untouched.
 - **Friction bundle** (2026-08-19). Pin-from-page: the server's first and only
   write route, `POST /config`, loopback-bound, accepting exactly
   `{"defaultProject": name-or-null}` and validating the name against real

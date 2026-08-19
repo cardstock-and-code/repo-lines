@@ -52,7 +52,7 @@ node bin/repo-lines.js --root ~/dev --open         # write a file instead
 node bin/repo-lines.js default sr-portal           # pin the project that opens first
 node bin/repo-lines.js session start --agent "Claude Code" --pid none --quiet
 npm test                                           # all suites
-node test/run.js paths                             # the one suite needing no browser
+node test/run.js paths                             # suites needing no browser: paths, multiroot
 ```
 
 Preferences live in `~/.repo-lines/config.json`. Sessions live in
@@ -63,6 +63,7 @@ Preferences live in `~/.repo-lines/config.json`. Sessions live in
 | Suite | Needs | Covers |
 | --- | --- | --- |
 | `paths.js` | node only | Windows path normalisation, CRLF handling |
+| `multiroot.js` | node only | 14 checks: several roots, name collisions, missing folders |
 | `e2e.py` | python + playwright | 140 checks: rendering, advice, remotes, zoom, panes, mobile |
 | `serve.py` | python + playwright | 26 checks: the localhost server, refresh keeps your place, pinning |
 | `hooks.py` | python | 16 checks: session check-in lifecycle |

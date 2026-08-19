@@ -35,17 +35,45 @@ function writeConfig(next) {
   return f;
 }
 
+/* --root may be repeated, so repeated flags collect into an array rather than
+   the last one silently winning. */
+const REPEATABLE = new Set(['root']);
+
 function args(argv) {
   const out = { _: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const k = a.slice(2);
-      if (argv[i + 1] && !argv[i + 1].startsWith('--')) out[k] = argv[++i];
-      else out[k] = true;
+      const v = (argv[i + 1] && !argv[i + 1].startsWith('--')) ? argv[++i] : true;
+      if (REPEATABLE.has(k) && k in out) out[k] = [].concat(out[k], v);
+      else out[k] = v;
     } else out._.push(a);
   }
   return out;
+}
+
+/* Every place a root can come from, in order of precedence, as a list. */
+function rootsFrom(o, conf) {
+  const flags = o.root ? [].concat(o.root).filter((r) => typeof r === 'string') : [];
+  if (flags.length) return flags.map(expand);
+  const env = process.env.REPO_LINES_ROOT;
+  if (env) return env.split(path.delimiter).filter(Boolean).map(expand);
+  if (Array.isArray(conf.roots) && conf.roots.length) return conf.roots.map(expand);
+  if (conf.root) return [expand(conf.root)];
+  return [path.join(HOME, 'dev')];
+}
+
+/* Missing folders are worth saying out loud, but one bad entry should not stop
+   a scan of the others. */
+function usableRoots(roots) {
+  const ok = roots.filter((r) => fs.existsSync(r));
+  for (const r of roots) if (!ok.includes(r)) console.error(`  skipping missing folder: ${r}`);
+  if (!ok.length) {
+    console.error(`No such folder: ${roots.join(', ')}\nPass --root <path>, or set REPO_LINES_ROOT.`);
+    process.exit(1);
+  }
+  return ok;
 }
 
 function git(cwd, a) {
@@ -58,16 +86,12 @@ function git(cwd, a) {
 
 function cmdRender(o) {
   const conf = readConfig();
-  const root = expand(o.root || process.env.REPO_LINES_ROOT || conf.root || path.join(HOME, 'dev'));
-  if (!fs.existsSync(root)) {
-    console.error(`No such folder: ${root}\nPass --root <path>, or set REPO_LINES_ROOT.`);
-    process.exit(1);
-  }
+  const roots = usableRoots(rootsFrom(o, conf));
   const outDir = expand(o.out || CONF_DIR);
   fs.mkdirSync(outDir, { recursive: true });
 
   const defaultProject = o.default || conf.defaultProject || null;
-  const model = scan({ root, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
+  const model = scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
   const htmlPath = path.join(outDir, 'repo-lines.html');
   const jsonPath = path.join(outDir, 'repo-lines.json');
 
@@ -107,18 +131,14 @@ function openInBrowser(target) {
 function cmdServe(o) {
   const http = require('http');
   const conf = readConfig();
-  const root = expand(o.root || process.env.REPO_LINES_ROOT || conf.root || path.join(HOME, 'dev'));
-  if (!fs.existsSync(root)) {
-    console.error(`No such folder: ${root}\nPass --root <path>, or set REPO_LINES_ROOT.`);
-    process.exit(1);
-  }
+  const roots = usableRoots(rootsFrom(o, conf));
   let defaultProject = o.default || conf.defaultProject || null;
   const host = '127.0.0.1';
   let port = Number(o.port || conf.port || 4321);
 
   function snapshot() {
     const t0 = Date.now();
-    const model = scan({ root, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
+    const model = scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
     return { model, ms: Date.now() - t0 };
   }
 
@@ -153,7 +173,7 @@ function cmdServe(o) {
         const name = parsed.defaultProject;
         if (name !== null) {
           const { findRepos } = require('../lib/scan');
-          const known = findRepos(root).map((d) => path.basename(d));
+          const known = roots.flatMap((r) => findRepos(r)).map((d) => path.basename(d));
           if (!known.some((k) => k.toLowerCase() === name.toLowerCase())) {
             return send(400, 'application/json', '{"error":"no such project"}');
           }
@@ -200,7 +220,7 @@ function cmdServe(o) {
 
   server.listen(port, host, () => {
     const addr = `http://localhost:${port}`;
-    console.log(`repo-lines serving ${root}`);
+    console.log(`repo-lines serving ${roots.join('\n                 ')}`);
     console.log(`  ${addr}`);
     console.log('  every refresh takes a fresh snapshot · ctrl-c to stop');
     if (o.app) openAppWindow(addr);
@@ -377,11 +397,11 @@ function cmdDefault(o) {
     console.log(`Default cleared · ${writeConfig(conf)}`);
     return;
   }
-  const root = expand(o.root || conf.root || process.env.REPO_LINES_ROOT || path.join(HOME, 'dev'));
+  const roots = rootsFrom(o, conf).filter((r) => fs.existsSync(r));
   const { findRepos } = require('../lib/scan');
-  const keys = findRepos(root).map((d) => path.basename(d));
+  const keys = roots.flatMap((r) => findRepos(r)).map((d) => path.basename(d));
   if (keys.length && !keys.some((k) => k.toLowerCase() === String(name).toLowerCase())) {
-    console.error(`No project called "${name}" under ${root}.`);
+    console.error(`No project called "${name}" under ${roots.join(', ')}.`);
     console.error(`Found: ${keys.join(', ')}`);
     process.exit(1);
   }
@@ -395,6 +415,7 @@ const HELP = `repo-lines — a picture of where your code stands
 
   repo-lines                          scan ~/dev and write the page
   repo-lines --root ~/code --open     scan elsewhere and open it
+  repo-lines --root ~/a --root ~/b    scan more than one folder
   repo-lines --out ~/Desktop          choose where the page is written
 
   repo-lines serve [--open]           serve at http://localhost:4321
