@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Localhost server checks: fresh snapshot per request, place kept across refresh."""
-import subprocess, time, socket, sys, os, signal, json
+import subprocess, tempfile, time, socket, sys, os, json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-ROOT = "/home/claude/fixtures/dev"
-HOME = "/home/claude/fixtures/rlhome"
+FIX = Path(os.environ.get("REPO_LINES_FIXTURES") or Path(tempfile.gettempdir()) / "repo-lines-fixtures")
+ROOT = os.environ.get("REPO_LINES_FIXTURE_DEV") or str(FIX / "dev")
+HOME = os.environ.get("REPO_LINES_HOME") or str(FIX / "rlhome")
 PORT = 4399
 APP = str(Path(__file__).resolve().parent.parent / "bin" / "repo-lines.js")
 
@@ -15,7 +16,7 @@ def check(name, cond, detail=""):
     if cond: ok += 1; print(f"  PASS  {name}")
     else: fail += 1; print(f"  FAIL  {name}" + (f" :: {detail}" if detail else ""))
 
-def sh(c, cwd): return subprocess.run(c, shell=True, cwd=cwd, capture_output=True, text=True).stdout.strip()
+def git(cwd, *a): subprocess.run(["git", *a], cwd=cwd, capture_output=True, check=True)
 
 env = dict(os.environ, REPO_LINES_HOME=HOME)
 srv = subprocess.Popen(["node", APP, "serve", "--root", ROOT, "--port", str(PORT)],
@@ -66,8 +67,9 @@ try:
               pg.evaluate("location.hash"))
         before = pg.inner_text("#advCounts")
 
-        sh("git checkout -q offline-queue-retry && echo '// x' >> retry.js && "
-           "git add -A && git commit -qm 'serve-test commit'", conv)
+        git(conv, "checkout", "-q", "offline-queue-retry")
+        with open(os.path.join(conv, "retry.js"), "a") as f: f.write("// x\n")
+        git(conv, "add", "-A"); git(conv, "commit", "-qm", "serve-test commit")
         pg.reload(); pg.wait_for_timeout(800)
 
         check("still on the same project", pg.inner_text("#mapTitle") == "Convention App", pg.inner_text("#mapTitle"))
@@ -80,9 +82,50 @@ try:
         pg.goto(f"http://127.0.0.1:{PORT}/#does-not-exist/nope"); pg.wait_for_timeout(700)
         check("bad url falls back to the default", pg.inner_text("#mapTitle") == "S&R Portal",
               pg.inner_text("#mapTitle"))
+
+        print("\n-- pinning from the page --")
+        pg.goto(f"http://127.0.0.1:{PORT}/"); pg.wait_for_timeout(700)
+        check("pin control is visible over http", pg.locator("#pinBtn").is_visible())
+        check("the default project shows as pinned",
+              pg.locator("#pinBtn").get_attribute("aria-pressed") == "true")
+        label = [o for o in pg.locator("#proj option").all_text_contents() if "Convention" in o][0]
+        pg.select_option("#proj", label=label); pg.wait_for_timeout(300)
+        check("other projects show unpinned",
+              pg.locator("#pinBtn").get_attribute("aria-pressed") == "false")
+        pg.locator("#pinBtn").click(); pg.wait_for_timeout(600)
+        check("clicking pins the project",
+              pg.locator("#pinBtn").get_attribute("aria-pressed") == "true",
+              pg.locator("#pinBtn").get_attribute("aria-pressed") + " / " + pg.locator("#pinBtn").get_attribute("title"))
+        check("the pin reaches the model",
+              json.loads(get("/model.json")[2])["defaultProject"] == "convention-app")
+        cfg = json.load(open(os.path.join(HOME, "config.json")))
+        check("and survives on disk", cfg.get("defaultProject") == "convention-app", cfg)
+        pg.locator("#pinBtn").click(); pg.wait_for_timeout(400)
+        check("clicking again unpins",
+              json.loads(get("/model.json")[2])["defaultProject"] is None)
         br.close()
+
+    print("\n-- the write endpoint stays narrow --")
+    import urllib.error
+    def post(payload, raw=None):
+        data = raw if raw is not None else json.dumps(payload).encode()
+        rq = urllib.request.Request(f"http://127.0.0.1:{PORT}/config", data=data, method="POST")
+        try:
+            with urllib.request.urlopen(rq) as r: return r.status
+        except urllib.error.HTTPError as e: return e.code
+    check("a valid pin is accepted", post({"defaultProject": "sr-portal"}) == 200)
+    check("an unknown project is rejected", post({"defaultProject": "not-a-project"}) == 400)
+    check("extra keys are rejected", post({"defaultProject": "sr-portal", "port": 9}) == 400)
+    check("a non-string value is rejected", post({"defaultProject": 5}) == 400)
+    check("a non-json body is rejected", post(None, raw=b"hello") == 400)
+    rq = urllib.request.Request(f"http://127.0.0.1:{PORT}/model.json", data=b"{}", method="POST")
+    try:
+        urllib.request.urlopen(rq); check("posting anywhere else is refused", False)
+    except urllib.error.HTTPError as e:
+        check("posting anywhere else is refused", e.code == 405, e.code)
 finally:
-    srv.send_signal(signal.SIGINT); srv.wait(timeout=5)
+    # SIGINT cannot cross to a child on Windows; terminate() works everywhere
+    srv.terminate(); srv.wait(timeout=5)
 
 print(f"\n  {ok}/{ok+fail} server checks passed")
 sys.exit(1 if fail else 0)

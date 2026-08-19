@@ -8,7 +8,7 @@
             "type": "command",
             "command": "node",
             "args": [
-              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js",
               "session", "start",
               "--agent", "Claude Code",
               "--pid", "none",
@@ -27,7 +27,7 @@
             "type": "command",
             "command": "node",
             "args": [
-              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js",
               "session", "beat",
               "--agent", "Claude Code",
               "--pid", "none",
@@ -46,7 +46,7 @@
             "type": "command",
             "command": "node",
             "args": [
-              "C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js",
+              "%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js",
               "session", "end",
               "--quiet"
             ],

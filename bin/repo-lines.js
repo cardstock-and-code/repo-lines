@@ -67,7 +67,7 @@ function cmdRender(o) {
   fs.mkdirSync(outDir, { recursive: true });
 
   const defaultProject = o.default || conf.defaultProject || null;
-  const model = scan({ root, sessionDir: SESSION_DIR, defaultProject });
+  const model = scan({ root, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
   const htmlPath = path.join(outDir, 'repo-lines.html');
   const jsonPath = path.join(outDir, 'repo-lines.json');
 
@@ -112,13 +112,13 @@ function cmdServe(o) {
     console.error(`No such folder: ${root}\nPass --root <path>, or set REPO_LINES_ROOT.`);
     process.exit(1);
   }
-  const defaultProject = o.default || conf.defaultProject || null;
+  let defaultProject = o.default || conf.defaultProject || null;
   const host = '127.0.0.1';
   let port = Number(o.port || conf.port || 4321);
 
   function snapshot() {
     const t0 = Date.now();
-    const model = scan({ root, sessionDir: SESSION_DIR, defaultProject });
+    const model = scan({ root, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
     return { model, ms: Date.now() - t0 };
   }
 
@@ -132,6 +132,41 @@ function cmdServe(o) {
       });
       res.end(body);
     };
+    /* The one write the server accepts: pinning (or unpinning) the default
+       project from the page. Loopback-bound like everything else, one key,
+       validated against the projects that actually exist. */
+    if (req.method === 'POST' && url === '/config') {
+      let body = '';
+      req.on('data', (c) => {
+        body += c;
+        if (body.length > 1024) { send(413, 'text/plain', 'Too large'); req.destroy(); }
+      });
+      req.on('end', () => {
+        if (res.writableEnded) return;
+        let parsed;
+        try { parsed = JSON.parse(body); } catch { return send(400, 'application/json', '{"error":"body must be JSON"}'); }
+        const keys = Object.keys(parsed || {});
+        if (keys.length !== 1 || keys[0] !== 'defaultProject'
+            || (parsed.defaultProject !== null && typeof parsed.defaultProject !== 'string')) {
+          return send(400, 'application/json', '{"error":"only {\\"defaultProject\\": <name or null>} is accepted"}');
+        }
+        const name = parsed.defaultProject;
+        if (name !== null) {
+          const { findRepos } = require('../lib/scan');
+          const known = findRepos(root).map((d) => path.basename(d));
+          if (!known.some((k) => k.toLowerCase() === name.toLowerCase())) {
+            return send(400, 'application/json', '{"error":"no such project"}');
+          }
+        }
+        const c = readConfig();
+        if (name === null) delete c.defaultProject; else c.defaultProject = name;
+        writeConfig(c);
+        defaultProject = name;
+        console.log(`  ${new Date().toLocaleTimeString()}  pin -> ${name || 'cleared'}`);
+        send(200, 'application/json', JSON.stringify({ defaultProject: name }));
+      });
+      return;
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(405, 'text/plain', 'GET only');
     try {
       if (url === '/' || url === '/index.html') {
@@ -168,8 +203,47 @@ function cmdServe(o) {
     console.log(`repo-lines serving ${root}`);
     console.log(`  ${addr}`);
     console.log('  every refresh takes a fresh snapshot · ctrl-c to stop');
-    if (o.open) openInBrowser(addr);
+    if (o.app) openAppWindow(addr);
+    else if (o.open) openInBrowser(addr);
   });
+}
+
+/* A chromeless browser window is all the "desktop app" this needs: no runtime
+   to ship, no installer. Falls back to an ordinary tab when no Chromium-family
+   browser can be found. */
+function openAppWindow(url) {
+  const { spawnSync } = require('child_process');
+  const candidates = [];
+  if (process.platform === 'win32') {
+    const pf = process.env.ProgramFiles || 'C:\\Program Files';
+    const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const local = process.env.LOCALAPPDATA || '';
+    candidates.push(
+      path.join(pf86, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(pf, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      path.join(pf, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(local, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    );
+  } else if (process.platform === 'darwin') {
+    candidates.push(
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    );
+  } else {
+    candidates.push('google-chrome', 'chromium', 'chromium-browser', 'microsoft-edge');
+  }
+  for (const exe of candidates) {
+    try {
+      const ok = path.isAbsolute(exe)
+        ? fs.existsSync(exe)
+        : spawnSync(exe, ['--version'], { stdio: 'ignore' }).status === 0;
+      if (!ok) continue;
+      spawn(exe, [`--app=${url}`], { detached: true, stdio: 'ignore' }).unref();
+      return;
+    } catch { /* try the next one */ }
+  }
+  console.log('  no Edge or Chrome found for --app; opening a normal tab instead');
+  openInBrowser(url);
 }
 
 function escapeHtml(s) {
@@ -324,6 +398,7 @@ const HELP = `repo-lines — a picture of where your code stands
   repo-lines --out ~/Desktop          choose where the page is written
 
   repo-lines serve [--open]           serve at http://localhost:4321
+  repo-lines serve --app              same, in its own chromeless window
   repo-lines serve --port 5000        pick a different port
 
   repo-lines default sr-portal        always open this project first

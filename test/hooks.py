@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Hook-driven check-in: what fires when an agent starts, prompts, and exits."""
-import subprocess, os, sys, json, shutil, time
+import subprocess, os, sys, json, shutil, tempfile, time
 from pathlib import Path
 
-APP = str(Path(__file__).resolve().parent.parent / "bin" / "repo-lines.js")
-ROOT = "/home/claude/fixtures/dev"
-HOME = "/tmp/hooktest"
+REPO = Path(__file__).resolve().parent.parent
+APP = str(REPO / "bin" / "repo-lines.js")
+FIX = Path(os.environ.get("REPO_LINES_FIXTURES") or Path(tempfile.gettempdir()) / "repo-lines-fixtures")
+ROOT = os.environ.get("REPO_LINES_FIXTURE_DEV") or str(FIX / "dev")
+# a home of its own: this suite creates and deletes sessions, and must not
+# disturb the heartbeats the fixture laid down for the browser suites
+HOME = str(FIX / "hookhome")
 ok = fail = 0
 def check(name, cond, detail=""):
     global ok, fail
@@ -16,19 +20,23 @@ shutil.rmtree(HOME, ignore_errors=True); os.makedirs(HOME)
 env = dict(os.environ, REPO_LINES_HOME=HOME)
 
 def hook(cwd, *args):
-    """Run through a subshell that exits, exactly as a hook handler does."""
-    return subprocess.run(["bash", "-c", "node " + APP + " " + " ".join(args)],
-                          cwd=cwd, env=env, capture_output=True, text=True)
+    """A short-lived process that exits at once, exactly as a hook handler does."""
+    return subprocess.run(["node", APP, *args], cwd=cwd, env=env, capture_output=True, text=True)
 
 def sessions():
+    # require() and the scan options both take the paths as JS strings, where
+    # backslashes would read as escapes; forward slashes work on every platform
+    lib = (REPO / "lib" / "scan.js").as_posix()
+    root = Path(ROOT).as_posix()
+    sdir = (Path(HOME) / "sessions").as_posix()
     r = subprocess.run(["node", "-e",
-        "const{scan}=require('/home/claude/repo-lines/lib/scan');"
-        f"console.log(JSON.stringify(scan({{root:'{ROOT}',sessionDir:'{HOME}/sessions'}}).sessions))"],
+        f"const{{scan}}=require('{lib}');"
+        f"console.log(JSON.stringify(scan({{root:'{root}',sessionDir:'{sdir}'}}).sessions))"],
         capture_output=True, text=True, env=env)
     return json.loads(r.stdout)
 
 print("-- SessionStart --")
-r = hook(f"{ROOT}/sr-portal", "session", "start", "--agent", "'Claude Code'", "--pid", "none", "--quiet")
+r = hook(f"{ROOT}/sr-portal", "session", "start", "--agent", "Claude Code", "--pid", "none", "--quiet")
 check("check-in is silent", r.stdout.strip() == "", repr(r.stdout))
 check("and succeeds", r.returncode == 0, r.returncode)
 s = sessions()
@@ -48,7 +56,7 @@ check("each names its own agent", agents == ["Claude Code", "Codex"], agents)
 print("\n-- UserPromptSubmit keeps it alive --")
 old = [x for x in sessions() if x["agent"] == "Claude Code"][0]["ageSec"]
 time.sleep(1.2)
-hook(f"{ROOT}/sr-portal", "session", "beat", "--agent", "'Claude Code'", "--pid", "none", "--quiet")
+hook(f"{ROOT}/sr-portal", "session", "beat", "--agent", "Claude Code", "--pid", "none", "--quiet")
 new = [x for x in sessions() if x["agent"] == "Claude Code"][0]["ageSec"]
 check("heartbeat refreshes", new <= old, f"{old} -> {new}")
 
@@ -64,7 +72,7 @@ r = hook(f"{ROOT}/sr-site", "session", "end", "--quiet")
 check("ending an unregistered session is harmless", r.returncode == 0 and r.stdout.strip() == "", r.returncode)
 
 print("\n-- launched somewhere that is not a repo --")
-r = hook("/home/claude", "session", "start", "--agent", "Codex", "--pid", "none", "--quiet")
+r = hook(f"{ROOT}/not-a-repo", "session", "start", "--agent", "Codex", "--pid", "none", "--quiet")
 check("exits clean", r.returncode == 0, r.returncode)
 check("says nothing to the transcript", r.stdout.strip() == "" and r.stderr.strip() == "", repr(r.stderr))
 check("and records nothing", len(sessions()) == 2, len(sessions()))

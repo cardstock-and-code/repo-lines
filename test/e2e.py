@@ -1,8 +1,24 @@
-import json, sys, pathlib
+import json, os, subprocess, sys, tempfile, pathlib
 from playwright.sync_api import sync_playwright
 
-HTML = pathlib.Path("/home/claude/out/repo-lines.html").as_uri()
-SHOTS = pathlib.Path("/home/claude/shots"); SHOTS.mkdir(exist_ok=True)
+# Locations come from the environment run.js sets; the fallbacks match its
+# defaults so the suite can also be run directly after `node test/run.js fixture`.
+FIX = pathlib.Path(os.environ.get("REPO_LINES_FIXTURES")
+                   or pathlib.Path(tempfile.gettempdir()) / "repo-lines-fixtures")
+DEV = pathlib.Path(os.environ.get("REPO_LINES_FIXTURE_DEV") or FIX / "dev")
+HOME = pathlib.Path(os.environ.get("REPO_LINES_HOME") or FIX / "rlhome")
+OUT = FIX / "out"; OUT.mkdir(parents=True, exist_ok=True)
+SHOTS = FIX / "shots"; SHOTS.mkdir(parents=True, exist_ok=True)
+
+# The suite checks a rendered page, so render one from the fixture first.
+APP = str(pathlib.Path(__file__).resolve().parent.parent / "bin" / "repo-lines.js")
+r = subprocess.run(["node", APP, "--root", str(DEV), "--out", str(OUT)],
+                   env=dict(os.environ, REPO_LINES_HOME=str(HOME)),
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    print("render failed:\n" + r.stdout + r.stderr); sys.exit(1)
+
+HTML = (OUT / "repo-lines.html").as_uri()
 
 results = []
 def check(name, cond, detail=""):
@@ -22,7 +38,7 @@ with sync_playwright() as pw:
     pg.goto(HTML); pg.wait_for_timeout(700)
 
     print("\n-- load --")
-    model = json.load(open("/home/claude/out/repo-lines.json"))
+    model = json.load(open(OUT / "repo-lines.json"))
     want = [p["key"] for p in model["projects"]].index("sr-portal")
     check("opens on the pinned default project", pg.input_value("#proj") == str(want),
           pg.input_value("#proj") + " wanted " + str(want))
@@ -31,6 +47,7 @@ with sync_playwright() as pw:
           pg.locator("#proj option").all_text_contents())
     check("no JS errors on load", not errors, errors)
     check("title renders", pg.inner_text("#mapTitle") == "S&R Portal", pg.inner_text("#mapTitle"))
+    check("pin control stays hidden on a file: page", pg.locator("#pinBtn").is_hidden())
     check("svg drawn", pg.locator("#map path.linepath").count() == 4,
           pg.locator("#map path.linepath").count())   # merged line hidden until expanded
     check("status rail has a plate per line", pg.locator("#rail .plate").count() == 5, pg.locator("#rail .plate").count())
@@ -173,6 +190,35 @@ with sync_playwright() as pw:
     pg.select_option("#proj", index=IDX["master-repo"]); pg.wait_for_timeout(400)
     check("master detected as trunk", pg.inner_text("#advSubject") == "master", pg.inner_text("#advSubject"))
     check("advice uses master, not main", "main" not in pg.inner_text("#advBody"), pg.inner_text("#advBody")[:120])
+
+    print("\n-- remotes: honest numbers, never fetched --")
+    pg.select_option("#proj", index=IDX["sr-site"]); pg.wait_for_timeout(400)
+    check("trunk says it is behind its remote", "behind origin/main" in pg.inner_text("#advBody"),
+          pg.inner_text("#advBody")[:200])
+    check("and says the number is only as fresh as the last fetch", "fetch" in pg.inner_text("#advBody"))
+    for i in range(pg.locator("#rail .plate").count()):
+        if "estimate-form" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
+            pg.locator("#rail .plate").nth(i).click(); break
+    pg.wait_for_timeout(300)
+    check("never-pushed branch says it exists only here", "only on this machine" in pg.inner_text("#advBody"),
+          pg.inner_text("#advBody")[:200])
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
+    pg.select_option("#proj", index=IDX["convention-app"]); pg.wait_for_timeout(400)
+    for i in range(pg.locator("#rail .plate").count()):
+        if "offline-queue-retry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
+            pg.locator("#rail .plate").nth(i).click(); break
+    pg.wait_for_timeout(300)
+    check("unpushed commits are counted against the upstream",
+          "not on origin/offline-queue-retry" in pg.inner_text("#advBody"), pg.inner_text("#advBody")[:200])
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
+    pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(400)
+    for i in range(pg.locator("#rail .plate").count()):
+        if "laundry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
+            pg.locator("#rail .plate").nth(i).click(); break
+    pg.wait_for_timeout(300)
+    check("a repo with no remote never nags about pushing",
+          "push" not in pg.inner_text("#advBody").lower(), pg.inner_text("#advBody")[:200])
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
 
     pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(400)
 
@@ -362,6 +408,16 @@ with sync_playwright() as pw:
         m = pg.evaluate("Math.round(document.querySelector('.mapwrap').getBoundingClientRect().height)")
         check(f"map keeps room at {vw}x{vh}", m >= 260, f"{m}px")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(120)
+
+    print("\n-- short screens get a shorter advice default --")
+    pg.set_viewport_size({"width": 1280, "height": 720}); pg.wait_for_timeout(250)
+    for i in range(pg.locator("#rail .plate").count()):
+        if "laundry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
+            pg.locator("#rail .plate").nth(i).click(); break
+    pg.wait_for_timeout(350)
+    advh = pg.evaluate("document.getElementById('advisory').getBoundingClientRect().height")
+    check("advice ceiling drops at 720p", advh <= 245, advh)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(120)
     pg.set_viewport_size({"width": 1440, "height": 940}); pg.wait_for_timeout(250)
 
     print("\n-- drifted branch sequence --")
@@ -389,11 +445,11 @@ with sync_playwright() as pw:
         c["state"] = ["live", "idle", "ended"][i % 3]
         c["when"] = str(i + 2) + " min ago"
         big["sessions"].append(c)
-    src = pathlib.Path("/home/claude/out/repo-lines.html").read_text()
+    src = (OUT / "repo-lines.html").read_text(encoding="utf-8")
     a = src.index("const MODEL = ") + len("const MODEL = ")
     z = src.index(";\n", a)
-    stress = pathlib.Path("/home/claude/out/_stress.html")
-    stress.write_text(src[:a] + json.dumps(big).replace("<", "\\u003c") + src[z:])
+    stress = OUT / "_stress.html"
+    stress.write_text(src[:a] + json.dumps(big).replace("<", "\\u003c") + src[z:], encoding="utf-8")
     sp = b.new_page(viewport={"width": 1440, "height": 900})
     sperr = []
     sp.on("pageerror", lambda e: sperr.append(str(e)))

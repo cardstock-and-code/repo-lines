@@ -8,7 +8,7 @@
           {
             "type": "command",
             "command": "node ~/.repo-lines/app/bin/repo-lines.js session start --agent Codex --pid none --quiet",
-            "commandWindows": "node \"C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js\" session start --agent Codex --pid none --quiet",
+            "commandWindows": "node \"%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js\" session start --agent Codex --pid none --quiet",
             "async": true,
             "timeout": 15
           }
@@ -21,7 +21,7 @@
           {
             "type": "command",
             "command": "node ~/.repo-lines/app/bin/repo-lines.js session beat --agent Codex --pid none --quiet",
-            "commandWindows": "node \"C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js\" session beat --agent Codex --pid none --quiet",
+            "commandWindows": "node \"%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js\" session beat --agent Codex --pid none --quiet",
             "async": true,
             "timeout": 15
           }
@@ -34,7 +34,7 @@
           {
             "type": "command",
             "command": "node ~/.repo-lines/app/bin/repo-lines.js session end --quiet",
-            "commandWindows": "node \"C:\\Users\\saulg\\.repo-lines\\app\\bin\\repo-lines.js\" session end --quiet",
+            "commandWindows": "node \"%USERPROFILE%\\.repo-lines\\app\\bin\\repo-lines.js\" session end --quiet",
             "timeout": 3
           }
         ]

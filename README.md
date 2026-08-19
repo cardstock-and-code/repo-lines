@@ -4,6 +4,19 @@ A picture of where your code stands. Scans a folder of git repositories and
 writes one self-contained HTML page: branches as lines, commits as stops, and a
 status rail that says in plain English what to do about each branch.
 
+## Who this is for
+
+**Beginner AI coders learning to understand branching and worktrees.** If you
+build with Claude Code or Codex but branches, merges, and worktrees still feel
+shaky, this tool is aimed at you. It does not assume git fluency: every
+advisory is written in plain English, every term of art is hoverable and
+explained, and the diagram is designed to teach you how to read it. Watching
+your own repos on this page is a gentler way to learn what "6 ahead, 6 behind"
+means than reading about it in the abstract.
+
+If you are already fluent in git, the page will still tell you the truth — but
+the explanations exist for the person who is not, and they are not going away.
+
 No daemon, no watchers, no background process. Every page you see is a snapshot
 taken when you asked for it — either written to a file, or served on localhost
 and refreshed on demand.
@@ -108,7 +121,10 @@ Both configs pass `--quiet` so nothing lands in the agent's transcript, and
 `--pid none` because the shell that runs a hook exits immediately. A session is
 counted live from its heartbeat, not from that shell.
 
-Edit the paths in both files if you did not install to `%USERPROFILE%\.repo-lines`.
+Both configs point at `%USERPROFILE%\.repo-lines\app`. Edit the paths if you
+installed elsewhere — and if your agent runs hooks without a shell, replace
+`%USERPROFILE%` with the literal path, since nothing will expand it for you.
+On macOS and Linux use `~/.repo-lines/app` in the non-Windows command fields.
 
 If you would rather not use hooks, check in by hand from inside a repo:
 
@@ -152,7 +168,22 @@ Clicking a card jumps to that project and highlights its branch on the map. So
 the sidebar answers "what is running right now", and one click answers "and where
 is that".
 
+### Or in its own window
+
+```bash
+node ~/.repo-lines/app/bin/repo-lines.js serve --app
+```
+
+Same server, but opened as a chromeless Edge/Chrome app window with its own
+taskbar entry — as close to a desktop app as this tool will ever get, on
+purpose. Falls back to an ordinary tab if neither browser is found.
+
 ## Choosing which project opens first
+
+Click the pin next to the project dropdown — pinned means this project opens
+first, every time. Clicking again unpins. The pin only works over localhost,
+because saving it is the one thing the server will write; on a file page use
+the CLI instead:
 
 ```bash
 node ~/.repo-lines/app/bin/repo-lines.js default sr-portal
@@ -193,6 +224,21 @@ Everything works without this. Sessions only add names to the sidebar.
 cannot prove which was cut from which. The scanner guesses and says so. This
 setting makes it certain.
 
+## Global preferences
+
+`~/.repo-lines/config.json` can also hold a `pretty` map that fixes up
+title-cased words in project labels — shorthand only you use, kept as a
+preference rather than a rule in the code:
+
+```json
+{
+  "defaultProject": "my-portal",
+  "pretty": { "Sr": "S&R" }
+}
+```
+
+With that, a folder called `sr-portal` is labelled "S&R Portal".
+
 ## Files it writes
 
 | File | For |
@@ -204,3 +250,19 @@ setting makes it certain.
 
 The page pulls Barlow Condensed and IBM Plex from Google Fonts. Offline it falls
 back to condensed and system faces — same layout, slightly different texture.
+
+## Remotes
+
+The scanner **never touches the network**. Ahead/behind against a remote is
+computed from whatever your last fetch or push left behind, and the page says
+so in plain English: a trunk that has fallen behind its remote tells you the
+number is only as fresh as your last fetch, and a branch that has never been
+pushed tells you it exists only on this machine. Repos with no remote at all
+are never nagged about pushing.
+
+## Support
+
+This is a working tool I use daily, maintained in roughly an hour a week.
+Issues are read and obvious fixes get merged; there is no roadmap promise and
+no SLA. It is deliberately small — if you need more, fork it, that is what the
+license is for.

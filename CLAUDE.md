@@ -9,10 +9,10 @@ self-contained HTML page showing where the code stands: branches drawn as transi
 lines, commits as stops, and a plain-English advisory strip that says what to do
 about the selected branch and in what order.
 
-The audience is a working owner-operator, not a senior engineer. Saul is still
-building confidence with branches and worktrees, so the page's job is as much to
-**teach** as to display. Every design decision bends toward "would someone who is
-unsure about rebasing understand this?"
+The audience is a beginner AI coder — someone who builds with agents but is
+still building confidence with branches and worktrees — so the page's job is as
+much to **teach** as to display. Every design decision bends toward "would
+someone who is unsure about rebasing understand this?"
 
 ## Non-negotiables
 
@@ -63,22 +63,15 @@ Preferences live in `~/.repo-lines/config.json`. Sessions live in
 | Suite | Needs | Covers |
 | --- | --- | --- |
 | `paths.js` | node only | Windows path normalisation, CRLF handling |
-| `e2e.py` | python + playwright | 133 checks: rendering, advice, zoom, panes, mobile |
-| `serve.py` | python + playwright | 13 checks: the localhost server, refresh keeps your place |
+| `e2e.py` | python + playwright | 140 checks: rendering, advice, remotes, zoom, panes, mobile |
+| `serve.py` | python + playwright | 26 checks: the localhost server, refresh keeps your place, pinning |
 | `hooks.py` | python | 16 checks: session check-in lifecycle |
 
-**Known gap:** `test/fixture.sh` only *refreshes* the fixture — heartbeats, live
-PIDs, mtimes. The fixture repositories themselves were built by ad-hoc commands
-that were never captured, so on a fresh machine the browser suites have nothing
-to run against. Rebuilding `fixture.sh` into a full builder is the first task.
-See `docs/ROADMAP.md` for the shape those repos need.
+`test/fixture.js` builds the entire fixture from nothing — six sample repos,
+worktrees, heartbeats, mtimes — idempotently, with node and git only, so the
+suites run on any fresh machine. `node test/run.js fixture` rebuilds it alone.
+The repos are shaped to match e2e.py's exact ahead/behind assertions; the
+comments in fixture.js say which numbers matter.
 
-## How Saul likes to work
-
-- Voice mode for exploring, text for structured output.
-- One question at a time. No large information dumps.
-- He thinks aloud; not every statement is an instruction.
-- Flag a better approach *before* executing, rather than complying silently.
-- Offer a session log entry when stopping or changing phase. Bullets with
-  indented sub-bullets, header with specific date and time, no raw markdown
-  symbols in the log body.
+Maintainer-specific working preferences live in `CLAUDE.local.md`, which is
+gitignored — create your own if you want one.

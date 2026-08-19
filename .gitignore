@@ -19,3 +19,9 @@ Thumbs.db
 
 # local preferences, never committed
 .repo-lines/
+
+# maintainer-local instructions, never committed
+CLAUDE.local.md
+
+# editor/agent scratch
+.claude/

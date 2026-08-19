@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Runs the suites. Three of them drive a real browser through Playwright, which
+ * Runs the suites. Two of them drive a real browser through Playwright, which
  * is a Python dependency rather than a Node one, so this script checks for it up
  * front and says what to install instead of failing halfway through a run.
  *
@@ -29,18 +29,6 @@ function python() {
   return null;
 }
 
-/* The fixture script is bash. Git for Windows ships bash, so look there too. */
-function bash() {
-  if (have('bash', ['--version'])) return 'bash';
-  if (WIN) {
-    for (const p of [
-      'C:\\Program Files\\Git\\bin\\bash.exe',
-      'C:\\Program Files (x86)\\Git\\bin\\bash.exe',
-    ]) if (fs.existsSync(p)) return p;
-  }
-  return null;
-}
-
 function run(cmd, args, extraEnv = {}) {
   const r = spawnSync(cmd, args, {
     cwd: ROOT,
@@ -53,20 +41,17 @@ function run(cmd, args, extraEnv = {}) {
 }
 
 function buildFixture() {
-  const sh = bash();
-  if (!sh) {
-    console.error('Fixtures need bash. On Windows it comes with Git for Windows.');
-    return 1;
-  }
   fs.mkdirSync(FIX, { recursive: true });
-  return run(sh, [path.join('test', 'fixture.sh')]);
+  return run('node', [path.join('test', 'fixture.js')]);
 }
 
+/* hooks drives the CLI and reads the model back with plain node, so it needs
+   python but not a browser */
 const SUITES = {
-  paths: { needsPython: false, needsFixture: false, run: () => run('node', [path.join('test', 'paths.js')]) },
-  e2e: { needsPython: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'e2e.py')]) },
-  serve: { needsPython: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'serve.py')]) },
-  hooks: { needsPython: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'hooks.py')]) },
+  paths: { needsPython: false, needsPlaywright: false, needsFixture: false, run: () => run('node', [path.join('test', 'paths.js')]) },
+  e2e: { needsPython: true, needsPlaywright: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'e2e.py')]) },
+  serve: { needsPython: true, needsPlaywright: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'serve.py')]) },
+  hooks: { needsPython: true, needsPlaywright: false, needsFixture: true, run: (py) => run(py, [path.join('test', 'hooks.py')]) },
 };
 
 function main() {
@@ -87,8 +72,10 @@ function main() {
     console.error('Meanwhile `node test/run.js paths` runs without it.');
     process.exit(1);
   }
-  if (py) {
-    const check = spawnSync(py, ['-c', 'import playwright'], { stdio: 'ignore', shell: WIN });
+  if (py && names.some((n) => SUITES[n].needsPlaywright)) {
+    // no shell here: cmd.exe would concatenate the args unquoted, splitting
+    // the import statement apart; python.exe resolves from PATH without it
+    const check = spawnSync(py, ['-c', 'import playwright'], { stdio: 'ignore' });
     if (check.status !== 0) {
       console.error('Playwright is missing. Install it with:');
       console.error(`  ${py} -m pip install playwright && ${py} -m playwright install chromium`);
