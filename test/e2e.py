@@ -80,6 +80,19 @@ with sync_playwright() as pw:
           pg.locator(".session.here").count())
     check("sessions elsewhere marked away", pg.locator(".session.away").count() == 2,
           pg.locator(".session.away").count())
+    print("\n-- sessions say what they are doing --")
+    setnote = pg.locator(".session").filter(has_text="phase-25-payroll").first
+    check("an explicit note is shown as written",
+          "payout confirmation step" in setnote.inner_text(), setnote.inner_text())
+    check("and is not labelled as a commit",
+          setnote.locator(".note .nlabel").count() == 0)
+    auto = pg.locator(".session").filter(has_text="laundry-bin-rework").first
+    check("a session with no note falls back to its last commit",
+          "polish the bin flow" in auto.inner_text(), auto.inner_text())
+    check("and says that is where it came from",
+          auto.locator(".note .nlabel").inner_text().lower() == "last commit",
+          auto.locator(".note").inner_text())
+
     check("collision notice shown", "one file" in pg.inner_text(".notice").lower(), pg.inner_text(".notice")[:60])
     check("collision notice names its project", "portal" in pg.inner_text(".notice").lower(),
           pg.inner_text(".notice")[:80])

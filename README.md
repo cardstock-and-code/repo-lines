@@ -206,6 +206,11 @@ node ~/.repo-lines/app/bin/repo-lines.js session start --agent "Claude Code" --w
 The sidebar then shows which agent is in which worktree on which branch. Click a
 session to highlight its branch in the diagram.
 
+Each card also says what the session is *doing*: the `--note` if one was set,
+otherwise the branch's own last commit subject, marked "last commit" so you
+know where it came from. The fallback is read fresh on every snapshot, so it
+never goes stale.
+
 Everything works without this. Sessions only add names to the sidebar.
 
 ## Per-repo overrides

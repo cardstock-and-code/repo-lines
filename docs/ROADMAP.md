@@ -6,17 +6,18 @@ came out of that session.
 
 ## Release plan
 
-- **0.5.0** — ships when item 1 (remotes) lands. This is also when the repo
-  goes public and `repo-lines` publishes to npm: the known-wrong number is
-  fixed, so the page can be trusted by strangers.
-- **1.0.0** — ships when items 1–5 have all landed.
+- ~~**0.5.0**~~ — reached 2026-08-19 when the remotes work landed.
+- ~~**1.0.0**~~ — reached 2026-08-19; all five items are done.
+
+Still outstanding, and not code: register the npm account, create the repo
+under `cardstock-and-code`, add the MIT LICENSE file, drop `"private": true`
+from package.json, and publish.
 
 ## Next
 
-### 5. Automatic session notes
-
-The branch's last commit subject fills the note as a fallback, passed by the
-hook on each beat; an explicit `--note` always wins.
+Nothing scheduled. The five items decided in the 2026-08-19 grilling have all
+landed and the version is 1.0.0; what follows should come from real use, or
+from someone else's issue once the repo is public.
 
 ## Open-sourcing (decided 2026-08-19)
 
@@ -45,6 +46,12 @@ hook on each beat; an explicit `--note` always wins.
 
 ## Done
 
+- **Automatic session notes** (2026-08-19, version now 1.0.0). A session with
+  no explicit note shows its branch's last commit subject instead, labelled
+  "last commit" so the source is never ambiguous. Deviation worth noting: the
+  plan had the hook pass this on each beat, but deriving it at scan time is
+  simpler, needs no hook change, works for hand-registered sessions, and
+  cannot go stale between beats.
 - **Snapshot history** (2026-08-19). `lib/history.js` records a trimmed
   snapshot per scan, throttled to one an hour and pruned at 30 days, then
   writes one sentence per project under the project name. Deviation worth
