@@ -50,6 +50,7 @@ function buildFixture() {
 const SUITES = {
   paths: { needsPython: false, needsPlaywright: false, needsFixture: false, run: () => run('node', [path.join('test', 'paths.js')]) },
   multiroot: { needsPython: false, needsPlaywright: false, needsFixture: false, run: () => run('node', [path.join('test', 'multiroot.js')]) },
+  history: { needsPython: false, needsPlaywright: false, needsFixture: false, run: () => run('node', [path.join('test', 'history.js')]) },
   e2e: { needsPython: true, needsPlaywright: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'e2e.py')]) },
   serve: { needsPython: true, needsPlaywright: true, needsFixture: true, run: (py) => run(py, [path.join('test', 'serve.py')]) },
   hooks: { needsPython: true, needsPlaywright: false, needsFixture: true, run: (py) => run(py, [path.join('test', 'hooks.py')]) },

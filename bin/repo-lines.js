@@ -7,10 +7,21 @@ const { execFileSync, spawn } = require('child_process');
 
 const { scan } = require('../lib/scan');
 const { render } = require('../lib/render');
+const history = require('../lib/history');
 
 const HOME = os.homedir();
 const CONF_DIR = process.env.REPO_LINES_HOME || path.join(HOME, '.repo-lines');
 const SESSION_DIR = path.join(CONF_DIR, 'sessions');
+const HISTORY_DIR = path.join(CONF_DIR, 'history');
+
+/* Every snapshot both contributes to the rolling log and reads it back, so the
+   page can say what moved since last time. Off with --no-history. */
+function withHistory(model, o) {
+  if (o.history === false || o['no-history']) return model;
+  history.record(HISTORY_DIR, model);
+  model.since = history.compare(HISTORY_DIR, model);
+  return model;
+}
 
 function expand(p) {
   if (!p) return p;
@@ -91,7 +102,7 @@ function cmdRender(o) {
   fs.mkdirSync(outDir, { recursive: true });
 
   const defaultProject = o.default || conf.defaultProject || null;
-  const model = scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
+  const model = withHistory(scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty }), o);
   const htmlPath = path.join(outDir, 'repo-lines.html');
   const jsonPath = path.join(outDir, 'repo-lines.json');
 
@@ -138,7 +149,7 @@ function cmdServe(o) {
 
   function snapshot() {
     const t0 = Date.now();
-    const model = scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty });
+    const model = withHistory(scan({ roots, sessionDir: SESSION_DIR, defaultProject, pretty: conf.pretty }), o);
     return { model, ms: Date.now() - t0 };
   }
 
@@ -422,6 +433,7 @@ const HELP = `repo-lines — a picture of where your code stands
   repo-lines serve --app              same, in its own chromeless window
   repo-lines serve --port 5000        pick a different port
 
+  repo-lines --no-history             do not record or read the rolling log
   repo-lines default sr-portal        always open this project first
   repo-lines default                  show the current default
   repo-lines default none             clear it

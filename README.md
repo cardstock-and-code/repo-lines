@@ -243,6 +243,23 @@ labelled with the folder it came from — "Notes (dev)" and "Notes (clients)".
 A folder that does not exist is reported and skipped rather than stopping the
 scan.
 
+## What changed since yesterday
+
+Every snapshot you take is also recorded — a small trimmed copy, at most one
+per hour, kept for 30 days in `~/.repo-lines/history/`. Once there is one old
+enough to be worth comparing against, the page adds a line under the project
+name:
+
+> **since yesterday:** laundry-bin-rework moved 3, store-run-receipts is new
+
+That is the whole feature. It answers "did anything move while I wasn't
+looking", which is a different question from "what is true now". It is
+deliberately not a diff viewer.
+
+Before there is a day of history it compares against the oldest snapshot it
+has and says so ("since 4 hours ago"). `--no-history` turns the whole thing
+off, recording included.
+
 ## Global preferences
 
 `~/.repo-lines/config.json` can also hold a `pretty` map that fixes up
@@ -264,6 +281,7 @@ With that, a folder called `sr-portal` is labelled "S&R Portal".
 |---|---|
 | `~/.repo-lines/repo-lines.html` | You |
 | `~/.repo-lines/repo-lines.json` | Agents, with per-section staleness stamps |
+| `~/.repo-lines/history/*.json` | "Since yesterday"; hourly at most, 30 days |
 
 ## Offline
 

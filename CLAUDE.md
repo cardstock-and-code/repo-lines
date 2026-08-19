@@ -64,6 +64,7 @@ Preferences live in `~/.repo-lines/config.json`. Sessions live in
 | --- | --- | --- |
 | `paths.js` | node only | Windows path normalisation, CRLF handling |
 | `multiroot.js` | node only | 14 checks: several roots, name collisions, missing folders |
+| `history.js` | node only | 20 checks: throttling, retention, the "since" sentence |
 | `e2e.py` | python + playwright | 140 checks: rendering, advice, remotes, zoom, panes, mobile |
 | `serve.py` | python + playwright | 26 checks: the localhost server, refresh keeps your place, pinning |
 | `hooks.py` | python | 16 checks: session check-in lifecycle |

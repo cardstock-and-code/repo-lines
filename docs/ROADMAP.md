@@ -13,14 +13,6 @@ came out of that session.
 
 ## Next
 
-### 4. Snapshot history
-
-`serve` writes a trimmed model to `~/.repo-lines/history/` at most once per
-hour, keeps 30 days, and the page shows one plain-English line per project —
-"since yesterday: main moved 3, laundry-bin-rework unchanged". Not a diff UI;
-the question history answers is "did anything move while I wasn't looking",
-and a sentence answers it.
-
 ### 5. Automatic session notes
 
 The branch's last commit subject fills the note as a fallback, passed by the
@@ -53,6 +45,14 @@ hook on each beat; an explicit `--note` always wins.
 
 ## Done
 
+- **Snapshot history** (2026-08-19). `lib/history.js` records a trimmed
+  snapshot per scan, throttled to one an hour and pruned at 30 days, then
+  writes one sentence per project under the project name. Deviation worth
+  noting: the grilling said `serve` would record, but file renders record too,
+  since both are "taking a snapshot" and file-mode users would otherwise never
+  accumulate history. `--no-history` opts out entirely. Covered by
+  `test/history.js` (20 checks), which fabricates snapshot ages no browser run
+  could wait for.
 - **Multiple roots** (2026-08-19). `--root` repeats, `REPO_LINES_ROOT` accepts
   a delimited list, and config.json takes a `roots` array. A name appearing in
   two roots keeps both, disambiguated by parent folder in both key and label;

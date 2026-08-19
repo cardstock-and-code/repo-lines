@@ -92,17 +92,27 @@ try:
         pg.select_option("#proj", label=label); pg.wait_for_timeout(300)
         check("other projects show unpinned",
               pg.locator("#pinBtn").get_attribute("aria-pressed") == "false")
-        pg.locator("#pinBtn").click(); pg.wait_for_timeout(600)
-        check("clicking pins the project",
-              pg.locator("#pinBtn").get_attribute("aria-pressed") == "true",
+        # the button updates when the POST comes back, so poll rather than
+        # guessing at a sleep long enough to cover it
+        def pressed_becomes(want):
+            try:
+                pg.wait_for_function(
+                    "want => document.getElementById('pinBtn').getAttribute('aria-pressed') === want",
+                    arg=want, timeout=5000)
+                return True
+            except Exception:
+                return False
+
+        pg.locator("#pinBtn").click()
+        check("clicking pins the project", pressed_becomes("true"),
               pg.locator("#pinBtn").get_attribute("aria-pressed") + " / " + pg.locator("#pinBtn").get_attribute("title"))
         check("the pin reaches the model",
               json.loads(get("/model.json")[2])["defaultProject"] == "convention-app")
         cfg = json.load(open(os.path.join(HOME, "config.json")))
         check("and survives on disk", cfg.get("defaultProject") == "convention-app", cfg)
-        pg.locator("#pinBtn").click(); pg.wait_for_timeout(400)
-        check("clicking again unpins",
-              json.loads(get("/model.json")[2])["defaultProject"] is None)
+        pg.locator("#pinBtn").click()
+        check("clicking again unpins", pressed_becomes("false")
+              and json.loads(get("/model.json")[2])["defaultProject"] is None)
         br.close()
 
     print("\n-- the write endpoint stays narrow --")
