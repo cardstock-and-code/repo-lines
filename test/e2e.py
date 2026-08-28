@@ -172,7 +172,7 @@ with sync_playwright() as pw:
     dots.nth(3).hover(); pg.wait_for_timeout(250)
     check("tooltip visible", "on" in (pg.locator("#tip").get_attribute("class") or ""))
     check("tooltip has commit subject", len(pg.inner_text("#tip .msg")) > 3, pg.inner_text("#tip .msg"))
-    check("tooltip meta has sha + author", "saul" in pg.inner_text("#tip .meta") or "claude" in pg.inner_text("#tip .meta"),
+    check("tooltip meta has sha + author", "claude" in pg.inner_text("#tip .meta"),
           pg.inner_text("#tip .meta"))
     pg.screenshot(path=str(SHOTS / "04-tooltip.png"), clip={"x": 0, "y": 60, "width": 1200, "height": 560})
 

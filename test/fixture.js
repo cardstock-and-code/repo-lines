@@ -32,7 +32,7 @@ const at = (minAgo) => new Date(NOW - minAgo * MIN).toISOString();
 
 /* Every commit gets an explicit, distinct timestamp so the shared timeline the
    page draws is deterministic. The author is lowercase on purpose: a tooltip
-   check greps for "saul". Global/system git config is masked so a machine's
+   check greps for "claude". Global/system git config is masked so a machine's
    gpgsign or hooksPath cannot leak into the fixture — via an empty file,
    because git cannot open the null device as a config file on Windows. */
 const EMPTY_CONFIG = path.join(os.tmpdir(), 'repo-lines-empty-gitconfig');
@@ -40,8 +40,8 @@ fs.writeFileSync(EMPTY_CONFIG, '');
 const GITENV = {
   ...process.env,
   GIT_CONFIG_GLOBAL: EMPTY_CONFIG, GIT_CONFIG_SYSTEM: EMPTY_CONFIG,
-  GIT_AUTHOR_NAME: 'saul', GIT_AUTHOR_EMAIL: 'saul@example.test',
-  GIT_COMMITTER_NAME: 'saul', GIT_COMMITTER_EMAIL: 'saul@example.test',
+  GIT_AUTHOR_NAME: 'claude', GIT_AUTHOR_EMAIL: 'claude@example.test',
+  GIT_COMMITTER_NAME: 'claude', GIT_COMMITTER_EMAIL: 'claude@example.test',
 };
 
 function git(cwd, args, minAgo) {
