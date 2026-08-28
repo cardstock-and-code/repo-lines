@@ -434,7 +434,7 @@ const HELP = `repo-lines — a picture of where your code stands
   repo-lines serve --port 5000        pick a different port
 
   repo-lines --no-history             do not record or read the rolling log
-  repo-lines default sr-portal        always open this project first
+  repo-lines default rl-portal        always open this project first
   repo-lines default                  show the current default
   repo-lines default none             clear it
   repo-lines config                   show saved preferences
@@ -443,7 +443,7 @@ const HELP = `repo-lines — a picture of where your code stands
   repo-lines session beat | end | list | prune
 
 Per-repo overrides go in <repo>/.repo-lines.json:
-  { "label": "S&R Portal", "base": { "child-branch": "parent-branch" }, "hide": ["old"] }
+  { "label": "Repo Lines Portal", "base": { "child-branch": "parent-branch" }, "hide": ["old"] }
 `;
 
 function main() {

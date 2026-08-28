@@ -49,7 +49,7 @@ editing in place over restructuring.
 ```bash
 node bin/repo-lines.js serve --root ~/dev --open   # localhost:4321, rescans per refresh
 node bin/repo-lines.js --root ~/dev --open         # write a file instead
-node bin/repo-lines.js default sr-portal           # pin the project that opens first
+node bin/repo-lines.js default rl-portal           # pin the project that opens first
 node bin/repo-lines.js session start --agent "Claude Code" --pid none --quiet
 npm test                                           # all suites
 node test/run.js paths                             # suites needing no browser: paths, multiroot

@@ -36,7 +36,7 @@ def sessions():
     return json.loads(r.stdout)
 
 print("-- SessionStart --")
-r = hook(f"{ROOT}/sr-portal", "session", "start", "--agent", "Claude Code", "--pid", "none", "--quiet")
+r = hook(f"{ROOT}/rl-portal", "session", "start", "--agent", "Claude Code", "--pid", "none", "--quiet")
 check("check-in is silent", r.stdout.strip() == "", repr(r.stdout))
 check("and succeeds", r.returncode == 0, r.returncode)
 s = sessions()
@@ -45,7 +45,7 @@ check("shown as live despite the hook shell being gone", s[0]["state"] == "live"
 check("no pid recorded", s[0].get("pid") in (None, 0), s[0].get("pid"))
 
 print("\n-- a second agent, same repo, different worktree --")
-hook(f"{ROOT}/trees/sr-portal-laundry", "session", "start", "--agent", "Codex", "--pid", "none", "--quiet")
+hook(f"{ROOT}/trees/rl-portal-laundry", "session", "start", "--agent", "Codex", "--pid", "none", "--quiet")
 s = sessions()
 check("both are listed", len(s) == 2, len(s))
 branches = sorted(x["branch"] for x in s)
@@ -56,7 +56,7 @@ check("each names its own agent", agents == ["Claude Code", "Codex"], agents)
 print("\n-- UserPromptSubmit keeps it alive --")
 old = [x for x in sessions() if x["agent"] == "Claude Code"][0]["ageSec"]
 time.sleep(1.2)
-hook(f"{ROOT}/sr-portal", "session", "beat", "--agent", "Claude Code", "--pid", "none", "--quiet")
+hook(f"{ROOT}/rl-portal", "session", "beat", "--agent", "Claude Code", "--pid", "none", "--quiet")
 new = [x for x in sessions() if x["agent"] == "Claude Code"][0]["ageSec"]
 check("heartbeat refreshes", new <= old, f"{old} -> {new}")
 
@@ -65,10 +65,10 @@ hook(f"{ROOT}/convention-app", "session", "beat", "--agent", "Codex", "--pid", "
 check("self-registered", len(sessions()) == 3, len(sessions()))
 
 print("\n-- SessionEnd --")
-r = hook(f"{ROOT}/trees/sr-portal-laundry", "session", "end", "--quiet")
+r = hook(f"{ROOT}/trees/rl-portal-laundry", "session", "end", "--quiet")
 check("checkout is silent", r.stdout.strip() == "", repr(r.stdout))
 check("session removed", len(sessions()) == 2, len(sessions()))
-r = hook(f"{ROOT}/sr-site", "session", "end", "--quiet")
+r = hook(f"{ROOT}/rl-site", "session", "end", "--quiet")
 check("ending an unregistered session is harmless", r.returncode == 0 and r.stdout.strip() == "", r.returncode)
 
 print("\n-- launched somewhere that is not a repo --")

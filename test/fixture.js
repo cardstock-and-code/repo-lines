@@ -100,7 +100,7 @@ function addRemote(dir, name) {
   git(dir, ['remote', 'add', 'origin', bare]);
 }
 
-/* --- sr-portal: the busy one ---------------------------------------------
+/* --- rl-portal: the busy one ---------------------------------------------
    main ── two seed commits, a real (no-ff) merge of phase-24-pwa, then three
            more commits. laundry-bin-rework forks before all that movement,
            so it ends up exactly 6 behind (merge + 2 branch commits + 3).
@@ -108,8 +108,8 @@ function addRemote(dir, name) {
    phase-25-payroll ── forks at main's tip: ahead, 0 behind, clear to merge.
    store-run-receipts ── forks at phase-25's tip: reads as stacked. */
 {
-  const d = repo('sr-portal');
-  write(d, 'README.md', '# sr-portal\n');
+  const d = repo('rl-portal');
+  write(d, 'README.md', '# rl-portal\n');
   write(d, 'periods.js', 'export const periods = [];\n');
   write(d, 'PayoutTable.jsx', 'export function PayoutTable() { return null; }\n');
   write(d, 'bins.js', 'export const bins = [];\n');
@@ -121,7 +121,7 @@ function addRemote(dir, name) {
   git(d, ['branch', 'laundry-bin-rework']);           // forks here: will fall 6 behind
 
   git(d, ['checkout', '-q', '-b', 'phase-24-pwa']);
-  write(d, 'manifest.json', '{ "name": "sr-portal" }\n');
+  write(d, 'manifest.json', '{ "name": "rl-portal" }\n');
   commit(d, 'add web app manifest', 11500);
   write(d, 'sw.js', 'self.addEventListener("fetch", () => {});\n');
   commit(d, 'cache the shell offline', 11400);
@@ -161,9 +161,9 @@ function addRemote(dir, name) {
   commit(d, 'attach receipts to store runs', 1080);
 
   git(d, ['checkout', '-q', 'main']);
-  git(d, ['worktree', 'add', '-q', path.join(TREES, 'sr-portal-phase25'), 'phase-25-payroll']);
-  git(d, ['worktree', 'add', '-q', path.join(TREES, 'sr-portal-laundry'), 'laundry-bin-rework']);
-  git(d, ['worktree', 'add', '-q', path.join(TREES, 'sr-portal-storerun'), 'store-run-receipts']);
+  git(d, ['worktree', 'add', '-q', path.join(TREES, 'rl-portal-phase25'), 'phase-25-payroll']);
+  git(d, ['worktree', 'add', '-q', path.join(TREES, 'rl-portal-laundry'), 'laundry-bin-rework']);
+  git(d, ['worktree', 'add', '-q', path.join(TREES, 'rl-portal-storerun'), 'store-run-receipts']);
 }
 
 /* --- convention-app: one merged branch, one plain branch a couple ahead --- */
@@ -192,16 +192,16 @@ function addRemote(dir, name) {
   git(d, ['checkout', '-q', 'main']);
 }
 
-/* --- sr-site: one branch ahead, worked on from a linked worktree --- */
+/* --- rl-site: one branch ahead, worked on from a linked worktree --- */
 {
-  const d = repo('sr-site');
+  const d = repo('rl-site');
   write(d, 'EstimateForm.jsx', 'export function EstimateForm() { return null; }\n');
   write(d, 'site.css', 'body { margin: 0; }\n');
   commit(d, 'seed the site', 5700);
 
   // push main with one extra commit, then rewind the local copy: origin/main
   // is now 1 ahead, so the trunk advisory can teach "behind its remote"
-  addRemote(d, 'sr-site');
+  addRemote(d, 'rl-site');
   append(d, 'site.css', 'h1 { font-weight: 600; }\n');
   commit(d, 'tighten the heading', 5600);
   git(d, ['push', '-q', '-u', 'origin', 'main']);
@@ -213,7 +213,7 @@ function addRemote(dir, name) {
   append(d, 'EstimateForm.jsx', '// instant quote\n');
   commit(d, 'show the quote instantly', 1320);
   git(d, ['checkout', '-q', 'main']);
-  git(d, ['worktree', 'add', '-q', path.join(TREES, 'sr-site-estimate'), 'estimate-form']);
+  git(d, ['worktree', 'add', '-q', path.join(TREES, 'rl-site-estimate'), 'estimate-form']);
 }
 
 /* --- master-repo: proves trunk detection when the trunk is called master.
@@ -241,10 +241,10 @@ repo('empty-repo');
    periods.js is deliberately dirty in BOTH the phase-25 and laundry worktrees:
    that is what fires the two-lines-one-file collision notice. */
 const WT = {
-  phase25: path.join(TREES, 'sr-portal-phase25'),
-  laundry: path.join(TREES, 'sr-portal-laundry'),
-  storerun: path.join(TREES, 'sr-portal-storerun'),
-  estimate: path.join(TREES, 'sr-site-estimate'),
+  phase25: path.join(TREES, 'rl-portal-phase25'),
+  laundry: path.join(TREES, 'rl-portal-laundry'),
+  storerun: path.join(TREES, 'rl-portal-storerun'),
+  estimate: path.join(TREES, 'rl-site-estimate'),
 };
 append(WT.phase25, 'PayoutTable.jsx', '// wip: confirmation copy\n');
 append(WT.phase25, 'periods.js', '// wip: period rollover\n');
@@ -280,8 +280,8 @@ session('e', sess('Claude Code', path.join(FIX, 'somewhere-else'), 'who-knows', 
 
 const confFile = path.join(RLHOME, 'config.json');
 const conf = (() => { try { return JSON.parse(fs.readFileSync(confFile, 'utf8')); } catch { return {}; } })();
-conf.defaultProject = 'sr-portal';
-conf.pretty = { Sr: 'S&R' };   // e2e asserts the "S&R Portal" label via this
+conf.defaultProject = 'rl-portal';
+conf.pretty = { Rl: 'Repo Lines' };   // e2e asserts the "Repo Lines Portal" label via this
 fs.writeFileSync(confFile, JSON.stringify(conf, null, 2) + '\n');
 
 console.log(`fixture ready · ${DEV}`);

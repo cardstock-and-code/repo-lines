@@ -16,9 +16,9 @@ function eq(name, a, b, want=true){
   else console.log(`  PASS  ${name}`);
 }
 // the exact mismatch that would break session matching on Windows
-eq('slashes agree',        kWin('C:/dev/sr-portal'),  kWin('C:\\dev\\sr-portal'));
-eq('case agrees',          kWin('c:/dev/sr-portal'),  kWin('C:/dev/sr-portal'));
-eq('trailing slash agrees',kWin('C:/dev/sr-portal/'), kWin('C:/dev/sr-portal'));
+eq('slashes agree',        kWin('C:/dev/rl-portal'),  kWin('C:\\dev\\rl-portal'));
+eq('case agrees',          kWin('c:/dev/rl-portal'),  kWin('C:/dev/rl-portal'));
+eq('trailing slash agrees',kWin('C:/dev/rl-portal/'), kWin('C:/dev/rl-portal'));
 eq('mixed separators',     kWin('C:\\dev/trees\\a'),  kWin('c:/dev/trees/a'));
 // and case must STILL matter on linux, where two such dirs can coexist
 eq('linux stays case-sensitive', kNix('/home/x/Dev'), kNix('/home/x/dev'), false);

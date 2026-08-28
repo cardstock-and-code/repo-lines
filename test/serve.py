@@ -52,7 +52,7 @@ try:
         br = pw.chromium.launch(); pg = br.new_page(viewport={"width": 1440, "height": 900})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto(f"http://127.0.0.1:{PORT}/"); pg.wait_for_timeout(800)
-        check("url records the project", pg.evaluate("location.hash") == "#sr-portal",
+        check("url records the project", pg.evaluate("location.hash") == "#rl-portal",
               pg.evaluate("location.hash"))
 
         conv = os.path.join(ROOT, "convention-app")
@@ -80,7 +80,7 @@ try:
         check("no errors over http", not errs, errs)
 
         pg.goto(f"http://127.0.0.1:{PORT}/#does-not-exist/nope"); pg.wait_for_timeout(700)
-        check("bad url falls back to the default", pg.inner_text("#mapTitle") == "S&R Portal",
+        check("bad url falls back to the default", pg.inner_text("#mapTitle") == "Repo Lines Portal",
               pg.inner_text("#mapTitle"))
 
         print("\n-- pinning from the page --")
@@ -123,9 +123,9 @@ try:
         try:
             with urllib.request.urlopen(rq) as r: return r.status
         except urllib.error.HTTPError as e: return e.code
-    check("a valid pin is accepted", post({"defaultProject": "sr-portal"}) == 200)
+    check("a valid pin is accepted", post({"defaultProject": "rl-portal"}) == 200)
     check("an unknown project is rejected", post({"defaultProject": "not-a-project"}) == 400)
-    check("extra keys are rejected", post({"defaultProject": "sr-portal", "port": 9}) == 400)
+    check("extra keys are rejected", post({"defaultProject": "rl-portal", "port": 9}) == 400)
     check("a non-string value is rejected", post({"defaultProject": 5}) == 400)
     check("a non-json body is rejected", post(None, raw=b"hello") == 400)
     rq = urllib.request.Request(f"http://127.0.0.1:{PORT}/model.json", data=b"{}", method="POST")

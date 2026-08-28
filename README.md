@@ -95,7 +95,7 @@ Leave the tab open and hit refresh when you want to know where things stand.
 
 The selected project and branch live in the URL, so a refresh keeps your place
 rather than bouncing you back to the default. That also means a view is
-bookmarkable: `http://localhost:4321/#sr-portal/phase-25-payroll`.
+bookmarkable: `http://localhost:4321/#rl-portal/phase-25-payroll`.
 
 `/model.json` serves the same snapshot as JSON, for agents.
 
@@ -191,7 +191,7 @@ because saving it is the one thing the server will write; on a file page use
 the CLI instead:
 
 ```bash
-node ~/.repo-lines/app/bin/repo-lines.js default sr-portal
+node ~/.repo-lines/app/bin/repo-lines.js default rl-portal
 ```
 
 Saved to `~/.repo-lines/config.json`, so it survives regeneration. The default
@@ -224,7 +224,7 @@ Everything works without this. Sessions only add names to the sidebar.
 
 ```json
 {
-  "label": "S&R Portal",
+  "label": "Repo Lines Portal",
   "base": { "child-branch": "parent-branch" },
   "hide": ["abandoned-branch"]
 }
@@ -279,11 +279,11 @@ preference rather than a rule in the code:
 ```json
 {
   "defaultProject": "my-portal",
-  "pretty": { "Sr": "S&R" }
+  "pretty": { "Rl": "Repo Lines" }
 }
 ```
 
-With that, a folder called `sr-portal` is labelled "S&R Portal".
+With that, a folder called `rl-portal` is labelled "Repo Lines Portal".
 
 ## Files it writes
 

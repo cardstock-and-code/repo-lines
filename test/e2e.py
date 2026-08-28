@@ -39,15 +39,23 @@ with sync_playwright() as pw:
 
     print("\n-- load --")
     model = json.load(open(OUT / "repo-lines.json"))
-    want = [p["key"] for p in model["projects"]].index("sr-portal")
+    want = [p["key"] for p in model["projects"]].index("rl-portal")
     check("opens on the pinned default project", pg.input_value("#proj") == str(want),
           pg.input_value("#proj") + " wanted " + str(want))
     check("dropdown is alphabetical", [o.strip().split("  ")[0] for o in pg.locator("#proj option").all_text_contents()]
           == sorted([p["label"] for p in model["projects"]]),
           pg.locator("#proj option").all_text_contents())
     check("no JS errors on load", not errors, errors)
-    check("title renders", pg.inner_text("#mapTitle") == "S&R Portal", pg.inner_text("#mapTitle"))
+    check("title renders", pg.inner_text("#mapTitle") == "Repo Lines Portal", pg.inner_text("#mapTitle"))
     check("pin control stays hidden on a file: page", pg.locator("#pinBtn").is_hidden())
+    # the pin must only appear on loopback, where the serve process actually
+    # listens — a hosted copy of the page (the Pages demo) has no server behind it
+    hosted = b.new_page()
+    hosted.route("https://demo.example/**",
+                 lambda r: r.fulfill(path=str(OUT / "repo-lines.html"), content_type="text/html"))
+    hosted.goto("https://demo.example/"); hosted.wait_for_timeout(500)
+    check("pin control stays hidden on a hosted copy", hosted.locator("#pinBtn").is_hidden())
+    hosted.close()
     check("svg drawn", pg.locator("#map path.linepath").count() == 4,
           pg.locator("#map path.linepath").count())   # merged line hidden until expanded
     check("status rail has a plate per line", pg.locator("#rail .plate").count() == 5, pg.locator("#rail .plate").count())
@@ -72,7 +80,7 @@ with sync_playwright() as pw:
     labels = pg.locator(".session .proj").all_text_contents()
     check("every card names its project", all(l.strip() for l in labels), labels)
     check("a card from another project is listed",
-          any("S&R Site" in l for l in labels), labels)
+          any("Repo Lines Site" in l for l in labels), labels)
     check("unscanned session marked", any("Outside" in l for l in labels), labels)
 
     cards = pg.locator(".session")
@@ -135,13 +143,13 @@ with sync_playwright() as pw:
     away = pg.locator(".session.away").filter(has_text="estimate-form").first
     check("an away card exists to click", away.count() == 1)
     away.click(); pg.wait_for_timeout(450)
-    check("jumped to the other project", pg.inner_text("#mapTitle") == "S&R Site", pg.inner_text("#mapTitle"))
+    check("jumped to the other project", pg.inner_text("#mapTitle") == "Repo Lines Site", pg.inner_text("#mapTitle"))
     check("dropdown followed the jump", pg.input_value("#proj") == str(
-        [q["key"] for q in model["projects"]].index("sr-site")))
+        [q["key"] for q in model["projects"]].index("rl-site")))
     check("its branch got selected", pg.inner_text("#advSubject") == "estimate-form", pg.inner_text("#advSubject"))
     check("that card now reads as here", pg.locator(".session.here").filter(has_text="estimate-form").count() == 1)
     pg.screenshot(path=str(SHOTS / "08-cross-project-jump.png"), full_page=True)
-    pg.select_option("#proj", index=[q["key"] for q in model["projects"]].index("sr-portal"))
+    pg.select_option("#proj", index=[q["key"] for q in model["projects"]].index("rl-portal"))
     pg.wait_for_timeout(300)
 
     print("\n-- escape clears --")
@@ -205,7 +213,7 @@ with sync_playwright() as pw:
     check("advice uses master, not main", "main" not in pg.inner_text("#advBody"), pg.inner_text("#advBody")[:120])
 
     print("\n-- remotes: honest numbers, never fetched --")
-    pg.select_option("#proj", index=IDX["sr-site"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["rl-site"]); pg.wait_for_timeout(400)
     check("trunk says it is behind its remote", "behind origin/main" in pg.inner_text("#advBody"),
           pg.inner_text("#advBody")[:200])
     check("and says the number is only as fresh as the last fetch", "fetch" in pg.inner_text("#advBody"))
@@ -224,7 +232,7 @@ with sync_playwright() as pw:
     check("unpushed commits are counted against the upstream",
           "not on origin/offline-queue-retry" in pg.inner_text("#advBody"), pg.inner_text("#advBody")[:200])
     pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
-    pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["rl-portal"]); pg.wait_for_timeout(400)
     for i in range(pg.locator("#rail .plate").count()):
         if "laundry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
             pg.locator("#rail .plate").nth(i).click(); break
@@ -233,7 +241,7 @@ with sync_playwright() as pw:
           "push" not in pg.inner_text("#advBody").lower(), pg.inner_text("#advBody")[:200])
     pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
 
-    pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["rl-portal"]); pg.wait_for_timeout(400)
 
     print("\n-- map fits without scrollbars --")
     for vw, vh in [(1440, 900), (1280, 720), (1920, 1080)]:
@@ -311,7 +319,7 @@ with sync_playwright() as pw:
     check("no errors from resizing", not errors, errors)
 
     print("\n-- mobile --")
-    pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(300)
+    pg.select_option("#proj", index=IDX["rl-portal"]); pg.wait_for_timeout(300)
     m = b.new_page(viewport={"width": 390, "height": 844}, device_scale_factor=3)
     m.goto(HTML); m.wait_for_timeout(600)
     check("single column on mobile",
@@ -409,7 +417,7 @@ with sync_playwright() as pw:
           pg.locator("#advBody .plan").count() == 1 and pg.locator("#advBody .plan[open]").count() == 0)
     pg.locator("#advBody .plan summary").click(); pg.wait_for_timeout(250)
     check("but they open on click", pg.locator("#advBody .plan[open]").count() == 1)
-    pg.select_option("#proj", index=IDX["sr-portal"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["rl-portal"]); pg.wait_for_timeout(400)
 
     print("\n-- advice never squeezes the map --")
     for vw, vh in [(1440, 900), (1280, 720), (1512, 800)]:

@@ -91,7 +91,7 @@ advisory. To fix it permanently, add `.repo-lines.json` at the repo root:
 
 ```json
 {
-  "label": "S&R Portal",
+  "label": "Repo Lines Portal",
   "base": { "store-run-receipts": "phase-25-payroll" },
   "hide": ["some-abandoned-branch"]
 }
