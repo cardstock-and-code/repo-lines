@@ -4,13 +4,13 @@
   "description": "A picture of where your code stands: git branches as transit lines, with plain-English advice about what to do next.",
   "license": "MIT",
   "author": "Cardstock & Code",
-  "homepage": "https://github.com/cardstock-and-code/repo-lines#readme",
+  "homepage": "https://github.com/srcleaningapp/repo-lines#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cardstock-and-code/repo-lines.git"
+    "url": "git+https://github.com/srcleaningapp/repo-lines.git"
   },
   "bugs": {
-    "url": "https://github.com/cardstock-and-code/repo-lines/issues"
+    "url": "https://github.com/srcleaningapp/repo-lines/issues"
   },
   "bin": {
     "repo-lines": "bin/repo-lines.js"

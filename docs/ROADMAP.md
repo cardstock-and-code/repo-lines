@@ -9,9 +9,9 @@ came out of that session.
 - ~~**0.5.0**~~ — reached 2026-08-19 when the remotes work landed.
 - ~~**1.0.0**~~ — reached 2026-08-19; all five items are done.
 
-Still outstanding, and not code: register the npm account, create the repo
-under `cardstock-and-code`, add the MIT LICENSE file, drop `"private": true`
-from package.json, and publish.
+Still outstanding, and not code: make `srcleaningapp/repo-lines` public,
+register an npm account, and publish. The LICENSE and publishable package.json
+landed 2026-08-19.
 
 ## Next
 
@@ -21,9 +21,11 @@ from someone else's issue once the repo is public.
 
 ## Open-sourcing (decided 2026-08-19)
 
-- **Home:** the `cardstock-and-code` GitHub account (created 2026-08-19), as
-  `repo-lines` on npm (name verified free; npm account still to register).
-  License MIT, copyright Cardstock & Code.
+- **Home:** `srcleaningapp/repo-lines` on GitHub (revised 2026-08-19 from the
+  original cardstock-and-code plan — pushed there and staying), as `repo-lines`
+  on npm (name verified free; npm account still to register). License MIT,
+  copyright Cardstock & Code — the studio stays the brand even though the repo
+  lives under the existing account.
 - **Positioning:** for beginner AI coders learning branching and worktrees.
   Research found the zero-install + plain-English combination is the
   uncontested niche; the agent-dashboard feature race is already crowded
