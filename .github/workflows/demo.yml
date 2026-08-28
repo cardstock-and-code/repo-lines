@@ -1,0 +1,46 @@
+# Publishes the live demo at https://srcleaningapp.github.io/repo-lines/
+#
+# The demo IS the test fixture: six sample repos built from nothing by
+# test/fixture.js, rendered once by the tool itself. No hand-maintained demo
+# data to drift out of date — if the fixture builds and renders, the demo is
+# current. The output is the tool's own single self-contained HTML file, which
+# is the whole pitch.
+name: demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    env:
+      # under $HOME so tildify renders friendly ~/dev paths on the page
+      REPO_LINES_FIXTURE_DEV: /home/runner/dev
+      REPO_LINES_HOME: /home/runner/rlhome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build the sample repos
+        run: node test/fixture.js
+      - name: Render the page
+        run: node bin/repo-lines.js --root "$REPO_LINES_FIXTURE_DEV" --out _site --no-history
+      - name: Serve it as the site index
+        run: mv _site/repo-lines.html _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4

@@ -33,8 +33,11 @@ from someone else's issue once the repo is public.
 - **Light scrub before public:** fix the hooks' hardcoded user paths, move the
   personal working-style section out of the public CLAUDE.md, drop the
   render.js name-comment, make the `Sr → S&R` prettifier a config nicety.
-- **Demo:** screenshot in the README plus a live GitHub Pages demo rendered
-  from the test fixture (which already builds six realistic repos).
+- **Demo:** a live GitHub Pages demo rendered from the test fixture — built
+  2026-08-19 as `.github/workflows/demo.yml`, published at
+  https://srcleaningapp.github.io/repo-lines/ on every push to main. The
+  screenshot idea was dropped: the live page is strictly better and cannot go
+  stale.
 - **Support posture, stated in the README:** ~an hour a week; triage and
   obvious fixes; no roadmap promises.
 - **Extensibility:** document what exists (`.repo-lines.json`, `REPO_LINES_*`

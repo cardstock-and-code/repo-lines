@@ -4,6 +4,11 @@ A picture of where your code stands. Scans a folder of git repositories and
 writes one self-contained HTML page: branches as lines, commits as stops, and a
 status rail that says in plain English what to do about each branch.
 
+**[Live demo](https://srcleaningapp.github.io/repo-lines/)** — the page this
+tool produces, rendered from six sample repositories. What you see is one
+self-contained HTML file; the real thing runs on your machine against your
+repos and never sends anything anywhere.
+
 ## Who this is for
 
 **Beginner AI coders learning to understand branching and worktrees.** If you
