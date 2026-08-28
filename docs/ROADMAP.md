@@ -9,9 +9,10 @@ came out of that session.
 - ~~**0.5.0**~~ — reached 2026-08-19 when the remotes work landed.
 - ~~**1.0.0**~~ — reached 2026-08-19; all five items are done.
 
-Still outstanding, and not code: register an npm account and publish. The
-LICENSE and publishable package.json landed 2026-08-19; the repo went public
-2026-08-28.
+Nothing outstanding. The LICENSE and publishable package.json landed
+2026-08-19; the repo went public and moved to the studio account 2026-08-28;
+`repo-lines@1.0.0` published to npm the same day and was verified with a
+clean-room `npx repo-lines` against the live registry.
 
 ## Next
 

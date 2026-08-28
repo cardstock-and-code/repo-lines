@@ -30,39 +30,38 @@ New to the code? Start with `CLAUDE.md`, then `docs/ROADMAP.md`.
 
 ## Install
 
-macOS / Linux:
+There is nothing to install:
 
 ```bash
-mkdir -p ~/.repo-lines
-cp -R app ~/.repo-lines/app
+npx repo-lines serve --root ~/dev --open
+```
+
+(on Windows PowerShell, `--root C:\dev` — PowerShell does not expand `~`).
+That downloads the package, runs it, and opens the page. The package has zero
+dependencies of its own, so what npx fetches is this repository's code and
+nothing else.
+
+If you use it daily, install it once so the command is just `repo-lines`:
+
+```bash
+npm install -g repo-lines
+repo-lines serve --root ~/dev --open
+```
+
+### Without npm at all
+
+The tool is a folder of plain Node scripts, so copying it works too — this is
+also the way to run an uncommitted checkout:
+
+```bash
+git clone https://github.com/cardstock-and-code/repo-lines ~/.repo-lines/app
 node ~/.repo-lines/app/bin/repo-lines.js serve --root ~/dev --open
 ```
 
-Windows PowerShell — note `$HOME`, not `~`. PowerShell does not expand `~`
-inside an argument, so it gets passed through literally and resolved against
-whatever folder you happen to be in:
-
-```powershell
-mkdir "$HOME\.repo-lines" -Force
-Copy-Item -Recurse -Force .\app "$HOME\.repo-lines\app"
-node "$HOME\.repo-lines\app\bin\repo-lines.js" serve --root C:\dev --open
-```
-
-Worth adding a shortcut to your PowerShell profile:
-
-```powershell
-function repo-lines { node "$HOME\.repo-lines\app\bin\repo-lines.js" @args }
-```
-
-Then `repo-lines serve --root C:\dev --open`.
-
-Requires Node 18+ and git. Nothing else — no npm install.
-
-Optional shortcut:
-
-```bash
-alias lines='node ~/.repo-lines/app/bin/repo-lines.js serve --root ~/dev --open'
-```
+Requires Node 18+ and git either way. The hooks configs in `hooks/` assume the
+clone lives at `~/.repo-lines/app` (`%USERPROFILE%\.repo-lines\app` on
+Windows); with a global npm install, point them at the output of
+`npm root -g` instead.
 
 ## What it tells you
 
