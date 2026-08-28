@@ -1,4 +1,4 @@
-# Publishes the live demo at https://srcleaningapp.github.io/repo-lines/
+# Publishes the live demo at https://cardstock-and-code.github.io/repo-lines/
 #
 # The demo IS the test fixture: six sample repos built from nothing by
 # test/fixture.js, rendered once by the tool itself. No hand-maintained demo

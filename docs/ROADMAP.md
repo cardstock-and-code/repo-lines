@@ -9,9 +9,9 @@ came out of that session.
 - ~~**0.5.0**~~ — reached 2026-08-19 when the remotes work landed.
 - ~~**1.0.0**~~ — reached 2026-08-19; all five items are done.
 
-Still outstanding, and not code: make `srcleaningapp/repo-lines` public,
-register an npm account, and publish. The LICENSE and publishable package.json
-landed 2026-08-19.
+Still outstanding, and not code: register an npm account and publish. The
+LICENSE and publishable package.json landed 2026-08-19; the repo went public
+2026-08-28.
 
 ## Next
 
@@ -21,11 +21,11 @@ from someone else's issue once the repo is public.
 
 ## Open-sourcing (decided 2026-08-19)
 
-- **Home:** `srcleaningapp/repo-lines` on GitHub (revised 2026-08-19 from the
-  original cardstock-and-code plan — pushed there and staying), as `repo-lines`
-  on npm (name verified free; npm account still to register). License MIT,
-  copyright Cardstock & Code — the studio stays the brand even though the repo
-  lives under the existing account.
+- **Home:** `cardstock-and-code/repo-lines` on GitHub — as originally decided,
+  after a detour: first pushed to a personal account on 2026-08-19, then
+  transferred to the studio account on 2026-08-28 once it went public. On npm
+  as `repo-lines` (name verified free; account still to register). License
+  MIT, copyright Cardstock & Code.
 - **Positioning:** for beginner AI coders learning branching and worktrees.
   Research found the zero-install + plain-English combination is the
   uncontested niche; the agent-dashboard feature race is already crowded
@@ -35,7 +35,7 @@ from someone else's issue once the repo is public.
   render.js name-comment, make the `Sr → S&R` prettifier a config nicety.
 - **Demo:** a live GitHub Pages demo rendered from the test fixture — built
   2026-08-19 as `.github/workflows/demo.yml`, published at
-  https://srcleaningapp.github.io/repo-lines/ on every push to main. The
+  https://cardstock-and-code.github.io/repo-lines/ on every push to main. The
   screenshot idea was dropped: the live page is strictly better and cannot go
   stale.
 - **Support posture, stated in the README:** ~an hour a week; triage and
