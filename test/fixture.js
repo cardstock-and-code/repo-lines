@@ -166,12 +166,12 @@ function addRemote(dir, name) {
   git(d, ['worktree', 'add', '-q', path.join(TREES, 'rl-portal-storerun'), 'store-run-receipts']);
 }
 
-/* --- convention-app: one merged branch, one plain branch a couple ahead --- */
+/* --- timetable-app: one merged branch, one plain branch a couple ahead --- */
 {
-  const d = repo('convention-app');
+  const d = repo('timetable-app');
   write(d, 'retry.js', 'export function retry() {}\n');
   write(d, 'sms.js', 'export const templates = [];\n');
-  commit(d, 'seed the convention app', 9000);
+  commit(d, 'seed the timetable app', 9000);
   append(d, 'retry.js', 'export const attempts = 3;\n');
   commit(d, 'cap retry attempts', 8900);
 
@@ -185,7 +185,7 @@ function addRemote(dir, name) {
   append(d, 'retry.js', 'export function queueOffline() {}\n');
   commit(d, 'queue sends while offline', 1800);
   // pushed at this point, then one more local commit: exactly 1 unpushed
-  addRemote(d, 'convention-app');
+  addRemote(d, 'timetable-app');
   git(d, ['push', '-q', '-u', 'origin', 'offline-queue-retry']);
   append(d, 'retry.js', 'export function drainQueue() {}\n');
   commit(d, 'drain the queue on reconnect', 1560);

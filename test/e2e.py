@@ -186,8 +186,8 @@ with sync_playwright() as pw:
 
     print("\n-- switching projects --")
     IDX = {p["key"]: i for i, p in enumerate(model["projects"])}
-    pg.select_option("#proj", index=IDX["convention-app"]); pg.wait_for_timeout(400)
-    check("title switched", pg.inner_text("#mapTitle") == "Convention App", pg.inner_text("#mapTitle"))
+    pg.select_option("#proj", index=IDX["timetable-app"]); pg.wait_for_timeout(400)
+    check("title switched", pg.inner_text("#mapTitle") == "Timetable App", pg.inner_text("#mapTitle"))
     pg.locator(".closedrow").click(); pg.wait_for_timeout(350)
     check("merged line drawn as dashes", pg.locator("#map path.ghost").count() == 1)
     check("sidebar unchanged by project switch", pg.locator(".session").count() == 5,
@@ -197,7 +197,7 @@ with sync_playwright() as pw:
             pg.locator("#rail .plate").nth(i).click(); break
     pg.wait_for_timeout(300)
     check("merged advisory", pg.inner_text("#advStatus").lower() == "closed", pg.inner_text("#advStatus"))
-    pg.screenshot(path=str(SHOTS / "05-convention.png"), full_page=True)
+    pg.screenshot(path=str(SHOTS / "05-timetable.png"), full_page=True)
 
     print("\n-- empty repo edge case --")
     pg.select_option("#proj", index=IDX["empty-repo"]); pg.wait_for_timeout(400)
@@ -224,7 +224,7 @@ with sync_playwright() as pw:
     check("never-pushed branch says it exists only here", "only on this machine" in pg.inner_text("#advBody"),
           pg.inner_text("#advBody")[:200])
     pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
-    pg.select_option("#proj", index=IDX["convention-app"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["timetable-app"]); pg.wait_for_timeout(400)
     for i in range(pg.locator("#rail .plate").count()):
         if "offline-queue-retry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
             pg.locator("#rail .plate").nth(i).click(); break
@@ -408,7 +408,7 @@ with sync_playwright() as pw:
     check("summary counts the steps", "4 steps" in pg.inner_text("#advBody .plan summary").lower(),
           pg.inner_text("#advBody .plan summary"))
     pg.keyboard.press("Escape"); pg.wait_for_timeout(150)
-    pg.select_option("#proj", index=IDX["convention-app"]); pg.wait_for_timeout(400)
+    pg.select_option("#proj", index=IDX["timetable-app"]); pg.wait_for_timeout(400)
     for i in range(pg.locator("#rail .plate").count()):
         if "offline-queue-retry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
             pg.locator("#rail .plate").nth(i).click(); break

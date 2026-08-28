@@ -55,15 +55,15 @@ try:
         check("url records the project", pg.evaluate("location.hash") == "#rl-portal",
               pg.evaluate("location.hash"))
 
-        conv = os.path.join(ROOT, "convention-app")
-        label = [o for o in pg.locator("#proj option").all_text_contents() if "Convention" in o][0]
+        conv = os.path.join(ROOT, "timetable-app")
+        label = [o for o in pg.locator("#proj option").all_text_contents() if "Timetable" in o][0]
         pg.select_option("#proj", label=label); pg.wait_for_timeout(400)
         for i in range(pg.locator("#rail .plate").count()):
             if "offline-queue-retry" in (pg.locator("#rail .plate").nth(i).get_attribute("aria-label") or ""):
                 pg.locator("#rail .plate").nth(i).click(); break
         pg.wait_for_timeout(400)
         check("url records the branch too",
-              pg.evaluate("location.hash") == "#convention-app/offline-queue-retry",
+              pg.evaluate("location.hash") == "#timetable-app/offline-queue-retry",
               pg.evaluate("location.hash"))
         before = pg.inner_text("#advCounts")
 
@@ -72,7 +72,7 @@ try:
         git(conv, "add", "-A"); git(conv, "commit", "-qm", "serve-test commit")
         pg.reload(); pg.wait_for_timeout(800)
 
-        check("still on the same project", pg.inner_text("#mapTitle") == "Convention App", pg.inner_text("#mapTitle"))
+        check("still on the same project", pg.inner_text("#mapTitle") == "Timetable App", pg.inner_text("#mapTitle"))
         check("still on the same branch", pg.inner_text("#advSubject") == "offline-queue-retry", pg.inner_text("#advSubject"))
         after = pg.inner_text("#advCounts")
         check("refresh shows the new commit", before != after, f"{before} -> {after}")
@@ -88,7 +88,7 @@ try:
         check("pin control is visible over http", pg.locator("#pinBtn").is_visible())
         check("the default project shows as pinned",
               pg.locator("#pinBtn").get_attribute("aria-pressed") == "true")
-        label = [o for o in pg.locator("#proj option").all_text_contents() if "Convention" in o][0]
+        label = [o for o in pg.locator("#proj option").all_text_contents() if "Timetable" in o][0]
         pg.select_option("#proj", label=label); pg.wait_for_timeout(300)
         check("other projects show unpinned",
               pg.locator("#pinBtn").get_attribute("aria-pressed") == "false")
@@ -107,9 +107,9 @@ try:
         check("clicking pins the project", pressed_becomes("true"),
               pg.locator("#pinBtn").get_attribute("aria-pressed") + " / " + pg.locator("#pinBtn").get_attribute("title"))
         check("the pin reaches the model",
-              json.loads(get("/model.json")[2])["defaultProject"] == "convention-app")
+              json.loads(get("/model.json")[2])["defaultProject"] == "timetable-app")
         cfg = json.load(open(os.path.join(HOME, "config.json")))
-        check("and survives on disk", cfg.get("defaultProject") == "convention-app", cfg)
+        check("and survives on disk", cfg.get("defaultProject") == "timetable-app", cfg)
         pg.locator("#pinBtn").click()
         check("clicking again unpins", pressed_becomes("false")
               and json.loads(get("/model.json")[2])["defaultProject"] is None)

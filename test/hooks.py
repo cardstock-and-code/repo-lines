@@ -61,7 +61,7 @@ new = [x for x in sessions() if x["agent"] == "Claude Code"][0]["ageSec"]
 check("heartbeat refreshes", new <= old, f"{old} -> {new}")
 
 print("\n-- a beat with no prior start registers itself --")
-hook(f"{ROOT}/convention-app", "session", "beat", "--agent", "Codex", "--pid", "none", "--quiet")
+hook(f"{ROOT}/timetable-app", "session", "beat", "--agent", "Codex", "--pid", "none", "--quiet")
 check("self-registered", len(sessions()) == 3, len(sessions()))
 
 print("\n-- SessionEnd --")
