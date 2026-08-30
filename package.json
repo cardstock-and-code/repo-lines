@@ -1,6 +1,6 @@
 {
   "name": "repo-lines",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A picture of where your code stands: git branches as transit lines, with plain-English advice about what to do next.",
   "license": "MIT",
   "author": "Cardstock & Code",
